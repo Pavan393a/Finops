@@ -136,8 +136,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-overview"
+            type="button"
             onClick={() => onSelectTab('overview')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'overview'
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -152,8 +153,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-stock"
+            type="button"
             onClick={() => onSelectTab('stock')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'stock'
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -170,8 +172,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-payments"
+            type="button"
             onClick={() => onSelectTab('payments')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'payments'
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -186,8 +189,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-rules"
+            type="button"
             onClick={() => onSelectTab('rules')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'rules'
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -202,8 +206,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-bills"
+            type="button"
             onClick={() => onSelectTab('bills')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'bills'
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -218,8 +223,9 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
           <button
             id="nav-tab-agent-api"
+            type="button"
             onClick={() => onSelectTab('agent-api')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'agent-api'
                 ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/30 shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'

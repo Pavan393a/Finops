@@ -27,6 +27,26 @@ export default function FinOpsCanvasPage() {
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const [isAutoPilotActive, setIsAutoPilotActive] = useState(true);
 
+  // Sync tab with URL search params on mount & back/forward
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as any;
+      if (['overview', 'stock', 'payments', 'rules', 'bills', 'agent-api'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
+  const handleSelectTab = (tab: 'overview' | 'stock' | 'payments' | 'rules' | 'bills' | 'agent-api') => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState(null, '', url.toString());
+    }
+  };
+
   // Inspector Modal State
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [inspectorData, setInspectorData] = useState<any>(null);
@@ -293,7 +313,7 @@ export default function FinOpsCanvasPage() {
       {/* 1. Left Sidebar (Origami Design Pattern) */}
       <OrigamiSidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         onResetDemo={handleResetDemo}
         onInspectPayment={handleInspectCognee}
         latestTxId={latestTx}
@@ -312,44 +332,56 @@ export default function FinOpsCanvasPage() {
           {/* Minimalist Step Progress Indicators (From Origami screenshot) */}
           <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/60 p-1 rounded-full border border-white/[0.04]">
             <button
-              onClick={() => setActiveTab('overview')}
+              id="header-pill-overview"
+              type="button"
+              onClick={() => handleSelectTab('overview')}
               title="Store Overview"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'overview' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
             <button
-              onClick={() => setActiveTab('stock')}
+              id="header-pill-stock"
+              type="button"
+              onClick={() => handleSelectTab('stock')}
               title="Inventory & Stock"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'stock' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
             <button
-              onClick={() => setActiveTab('payments')}
+              id="header-pill-payments"
+              type="button"
+              onClick={() => handleSelectTab('payments')}
               title="Money Moved (Stripe)"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'payments' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
             <button
-              onClick={() => setActiveTab('rules')}
+              id="header-pill-rules"
+              type="button"
+              onClick={() => handleSelectTab('rules')}
               title="Spending Rules"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'rules' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
             <button
-              onClick={() => setActiveTab('bills')}
+              id="header-pill-bills"
+              type="button"
+              onClick={() => handleSelectTab('bills')}
               title="3-Way Match & Bills"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'bills' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />
             <button
-              onClick={() => setActiveTab('agent-api')}
+              id="header-pill-agent-api"
+              type="button"
+              onClick={() => handleSelectTab('agent-api')}
               title="External Agent Interop"
-              className={`w-6 h-1.5 rounded-full transition-all ${
+              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
                 activeTab === 'agent-api' ? 'bg-indigo-500 scale-110 shadow-sm shadow-indigo-500/50' : 'bg-slate-700 hover:bg-slate-600'
               }`}
             />

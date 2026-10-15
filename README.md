@@ -114,47 +114,90 @@ When a payment settles on Stripe, Tillwise ingests the complete causal rationale
 
 ---
 
-## 🏛️ System Architecture
+## 🏆 Track 01 ("Agents that Spend") — Requirements & Implementation
+
+Tillwise directly fulfills every core requirement of **Track 01 ("Agents that spend")** by proving that autonomous AI agents can move real business capital safely without human supervision:
+
+| Track 01 Requirement | How Tillwise Satisfies It | Implementation In Code |
+| :--- | :--- | :--- |
+| **1. Programmatic Money Movement** | The agent directly transfers real capital in Stripe test mode to supplier accounts without waiting for manual banking approval. | [`src/lib/payment/stripe.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/lib/payment/stripe.ts) (`stripe.transfers.create`) |
+| **2. Multi-Party Payouts (Connect)** | Disburses funds directly to verified vendor accounts (`acct_1FreshFarmTestGBP`, `acct_1EcoPackTestGBP`). | [`src/lib/db/schema.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/lib/db/schema.ts#L16-L30) (`suppliers.stripeConnectedAccountId`) |
+| **3. Invoicing & 3-Way Match** | Verifies Purchase Order vs. Warehouse Delivery Slip vs. Inbound Supplier Invoice before any payout is authorized. | [`src/app/api/invoices/match/route.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/app/api/invoices/match/route.ts) |
+| **4. Agent Toolkit & MCP** | Exposes typed Model Context Protocol (MCP) and JSON tool interfaces for external agents (e.g. Arudno Labs, AutoGPT). | [`src/app/api/agent/tools/route.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/app/api/agent/tools/route.ts) |
+| **5. Idempotent & Reversible** | Every transfer has a deterministic idempotency key (`idem_tx_...`) preventing double-spends; listens to webhooks for settlement. | [`src/app/api/webhooks/stripe/route.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/app/api/webhooks/stripe/route.ts) |
+| **6. Deterministic Guardrails** | Non-LLM policy membrane blocks any order that breaches the **£5,000 cash floor** or exceeds the **£500 auto-spend limit**. | [`src/lib/policy/gate.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/lib/policy/gate.ts) (`evaluatePolicy`) |
+| **7. Anti-Fraud Cooling Period** | Enforces **Clause 3.1 72-hour cooling freeze** if an invoice arrives with modified bank sort code or account details. | [`src/components/ThreeWayMatchLab.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/ThreeWayMatchLab.tsx) |
+
+---
+
+## 🧩 Component Catalog: Built Specifically for the Track
+
+Every UI component was purpose-built following **Apple Design Language** and **Origami.chat ergonomics** to make autonomous financial operations dynamic, interactive, and transparent:
+
+| Component | Role in the Platform & Track Fulfillment | File Path |
+| :--- | :--- | :--- |
+| **`OrigamiSidebar`** | Left navigation co-pilot with quick tab switching, suggested *"Ask or adjust"* prompts, docked agent chat pop, and 1-click demo state reset. | [`src/components/OrigamiSidebar.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/OrigamiSidebar.tsx) |
+| **`AppleStoreOverview`** | Apple-clean financial summary displaying Available Cash (£5,780), Protected Buffer (£5,000), Safe Spend (£780), Urgent Restock Alert, and live Product Cards. | [`src/components/AppleStoreOverview.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/AppleStoreOverview.tsx) |
+| **`AgentActivityLog`** | Immutable operational audit log of every autonomous observation, rule check, and Stripe payout ("Human out of the loop") with Auto-Pilot toggle. | [`src/components/AgentActivityLog.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/AgentActivityLog.tsx) |
+| **`SkuDetailDrawer`** | Slide-over drawer with an interactive **Demand Surge Multiplier ($0.5\times - 3.0\times$)** and reorder slider with live disbursement calculation. | [`src/components/SkuDetailDrawer.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/SkuDetailDrawer.tsx) |
+| **`DecisionCard`** | Action Card generated when a proposed order exceeds £500, displaying trade-offs, dynamic policy badges, and a 1-click human sign-off button. | [`src/components/DecisionCard.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/DecisionCard.tsx) |
+| **`CogneeInspectorModal`** | Multi-hop causal provenance graph answering *"Why did you pay this?"* with semantic rationale, mandate clauses, and copyable Stripe transfer IDs. | [`src/components/CogneeInspectorModal.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/CogneeInspectorModal.tsx) |
+| **`SpendingRulesView`** | Store spending authority console with an interactive **Liquidity Reserve Slider** (£1k - £10k) connected to `PATCH /api/store/rules`. | [`src/components/SpendingRulesView.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/SpendingRulesView.tsx) |
+| **`ThreeWayMatchLab`** | Interactive simulation lab testing 100% Match, Shortfall short-payment, and Clause 3.1 supplier bank change cooling hold. | [`src/components/ThreeWayMatchLab.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/ThreeWayMatchLab.tsx) |
+| **`ExternalAgentGateway`** | Developer and AI agent gateway exposing Model Context Protocol (MCP), live tool execution console, and code snippets in cURL, Python, and MCP JSON. | [`src/components/ExternalAgentGateway.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/ExternalAgentGateway.tsx) |
+| **`LiveStoreSimulator`** | Real-time simulator for retail events: sales depletion (-5 units), delivery receipts (+20 units), cash inflows (+£1,500), and fraud attacks. | [`src/components/LiveStoreSimulator.tsx`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/components/LiveStoreSimulator.tsx) |
+
+---
+
+## 🏛️ Comprehensive Architecture Visualization
 
 ```mermaid
 graph TB
-    subgraph Client Layer ["Apple-Inspired & Origami.chat Interface"]
-        Overview["Store Overview & Activity Log"]
-        Inventory["Inventory Sheet & Surge Drawer"]
-        Rules["Spending Rules & Buffer Slider"]
-        Bills["3-Way Match & Fraud Lab"]
-        Gateway["External Agent Gateway (MCP)"]
-        Chat["Docked Agent Co-Pilot Pop"]
+    subgraph External ["1. Operators & External AI Agents"]
+        Operator["Retail Store Founder / Operator\n(Apple UI & Origami Co-Pilot)"]
+        ExternalAgent["External AI Agent\n(Arudno Labs / AutoGPT / ERP Agent)"]
     end
 
-    subgraph Runtime Layer ["Next.js 15 App Router & API Endpoints"]
-        APIAgent["/api/agent/investigate & /api/agent/tools"]
+    subgraph Interface ["2. Unified Presentation & Gateway Layer"]
+        UIOverview["Store Overview & Activity Log"]
+        UIDrawer["Surge Simulator & Restock Drawer"]
+        UIRules["Spending Rules & Buffer Slider"]
+        UILab["3-Way Match & Fraud Defense Lab"]
+        MCPGateway["Model Context Protocol (MCP) & REST Tools\n(/api/agent/tools)"]
+    end
+
+    subgraph Runtime ["3. Next.js 15 App Router & API Endpoints"]
+        APIInvestigate["/api/agent/investigate"]
         APIChat["/api/agent/chat"]
-        APIStatus["/api/store/status & /api/store/rules"]
-        APISim["/api/telemetry/simulate"]
+        APIRules["/api/store/rules"]
         APIInvoices["/api/invoices/match"]
         APIWebhooks["/api/webhooks/stripe"]
     end
 
-    subgraph Agentic Pipeline ["Core FinOps Intelligence"]
-        Orchestrator["Agent Orchestrator"]
-        LLM["OpenAI GPT-4o-mini (Proposal Engine)"]
-        PolicyGate["Deterministic Policy Membrane"]
+    subgraph AgenticCore ["4. Autonomous Agentic Pipeline"]
+        Orchestrator["Agent Orchestrator\n(triggerOrchestrationPipeline)"]
+        LLM["OpenAI GPT-4o-mini\n(Structured Proposal & Trade-offs)"]
+        Membrane{"Deterministic Policy Membrane\n- Floor: Cash ≥ £5,000\n- Cap: Spend ≤ £500\n- Verification: 3-Way Match"}
     end
 
-    subgraph Data & Payment Layer
-        DB[("Supabase PostgreSQL\n(Drizzle ORM)")]
-        StripeRail["Stripe API Test Rails\n(Transfers & Connected Accounts)"]
-        CogneeGraph["Cognee Knowledge Graph\n(Semantic Memory & Causal Proof)"]
+    subgraph Persistence ["5. Storage, Rails & Memory Engine"]
+        PostgreSQL[("Supabase PostgreSQL\n(Drizzle ORM Ledger)")]
+        StripeRail["Stripe API Rails\n- stripe.transfers.create\n- Destination: Connected Accounts\n- Idempotency: idem_tx_..."]
+        Cognee["Cognee Knowledge Graph\n- tillwise_policy (Cognified Mandate)\n- tillwise_audit (Causal Provenance Nodes)"]
     end
 
-    Overview & Inventory & Rules & Bills & Gateway & Chat --> Runtime Layer
-    Runtime Layer --> Orchestrator
+    Operator --> UIOverview & UIDrawer & UIRules & UILab
+    ExternalAgent --> MCPGateway
+    UIOverview & UIDrawer & UIRules & UILab --> Runtime
+    MCPGateway --> Runtime
+    Runtime --> Orchestrator
     Orchestrator --> LLM
-    Orchestrator --> PolicyGate
-    PolicyGate --> DB
-    PolicyGate --> StripeRail
-    PolicyGate --> CogneeGraph
+    LLM --> Orchestrator
+    Orchestrator --> Membrane
+    Membrane -->|"State Mutation"| PostgreSQL
+    Membrane -->|"Execute Transfer"| StripeRail
+    Membrane -->|"Record Provenance"| Cognee
+    StripeRail -.->|"Webhook Event"| APIWebhooks
 ```
 
 ---
