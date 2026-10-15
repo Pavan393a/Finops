@@ -21,6 +21,45 @@ Tillwise operates as an autonomous financial control plane. It continuously moni
 
 ---
 
+## 🤖 The Arudno Labs Story: How External AI Agents Safely Move Money via MCP
+
+Imagine a cutting-edge third-party AI research company like **Arudno Labs**. They build specialized autonomous agents that analyze local weather, social media trends, and logistics patterns to forecast retail demand shocks days in advance.
+
+### The Real-World Dilemma:
+How can an external AI agent from **Arudno Labs** actually *act* on its predictions in the physical world?
+- If the retail store founder gives Arudno Labs' agent raw access to corporate bank accounts or credit cards, **the agent could hallucinate, suffer prompt injection, or over-order and drain the store’s cash**.
+- But if Arudno Labs' agent can only send emails or Slack alerts, the store owner is stuck doing manual data entry and midnight wire transfers.
+
+### The Tillwise Solution:
+Instead of raw bank access, **Arudno Labs connects to Tillwise as an Autonomous Financial Gateway via the Model Context Protocol (MCP)** or REST Tools (`POST /api/agent/tools`):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Arudno Labs AI Agent
+    participant T as Tillwise MCP Gateway
+    participant P as Policy Membrane (Guardrails)
+    participant S as Stripe Rails
+    participant C as Cognee Causal Memory
+
+    A->>T: 1. Discovers tools via GET /api/agent/tools (MCP Schema)
+    A->>T: 2. Reads telemetry (Stock: 18 units, Velocity: 10/day, Safe Spend: £780)
+    Note over A: Arudno Labs predicts weekend surge;<br/>calculates 20 units needed
+    A->>T: 3. Dispatches tool call: investigate_and_reorder_sku("SKU-104", qty=20)
+    T->>P: 4. Evaluates Mandate (£320 ≤ £500 limit? Yes. Balance £5,460 ≥ £5,000? Yes.)
+    P->>S: 5. Executes programmatic transfer to verified supplier (acct_1FreshFarmTestGBP)
+    S-->>T: 6. Returns settled Stripe Transfer ID (tr_test_req_...)
+    T->>C: 7. Ingests causal provenance into Cognee Graph tagged to Arudno Labs
+    T-->>A: 8. Returns JSON: { status: "AUTO_EXECUTED", stripeTransferId: "tr_test_..." }
+```
+
+### What This Enables:
+1. **Zero-Trust Autonomous Execution**: Arudno Labs' agent can freely manage store stock and initiate supplier payments 24/7 without a human in the loop.
+2. **Mathematical Protection**: Even if Arudno Labs' AI model hallucinates and attempts to order £10,000 of inventory, **Tillwise’s non-LLM policy membrane immediately blocks the transfer** and prevents the £5,000 cash buffer from ever being breached.
+3. **Complete Attribution & Auditability**: Every pound spent by Arudno Labs is logged in Cognee memory. When the founder asks *"Why did we pay £320?"*, the audit trail confirms: *“Initiated by external agent Arudno Labs v1 based on projected weekend heatwave surge; authorized under Mandate Clause 2.1.”*
+
+---
+
 ## 🔍 How Tillwise Analyzes Retail Operations
 
 Tillwise does not wait for a human to trigger a spreadsheet review. It continuously analyzes operational health through a 3-tier sensory engine:
