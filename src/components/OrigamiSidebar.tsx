@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
   Send,
@@ -19,11 +19,28 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface ActionCardData {
+  type: 'RESTOCK_EXECUTED' | 'RESTOCK_PROPOSAL' | 'AUDIT_INSPECT' | 'RULE_UPDATED' | 'DEMO_RESET';
+  title: string;
+  detail: string;
+  amountGbp?: number;
+  quantity?: number;
+  skuCode?: string;
+  skuName?: string;
+  supplierName?: string;
+  stripeTransferId?: string;
+  transactionId?: string;
+  mandateClause?: string;
+  status?: string;
+  canExecute?: boolean;
+}
+
 interface Message {
   id: string;
   sender: 'user' | 'agent';
   text: string;
   time: string;
+  actionCard?: ActionCardData;
 }
 
 interface OrigamiSidebarProps {
@@ -49,11 +66,29 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
     {
       id: '1',
       sender: 'agent',
-      text: "Hi Pavan 👋 I'm your store AI agent. I continuously monitor your stock and cash. How can I help you today?",
+      text: "Hi Pavan 👋 I'm your store operations agent. You can execute Stripe payments or audit past decisions directly from this chat.",
       time: 'Just now',
+      actionCard: {
+        type: 'RESTOCK_PROPOSAL',
+        title: 'Restock Proposal: Organic Cold Brew',
+        detail: 'Stock is down to 18 units (1.8 days cover). Pre-approved mandate allows restocking 40 units while preserving the £5,000 cash floor.',
+        amountGbp: 320,
+        quantity: 40,
+        skuCode: 'SKU-104',
+        skuName: 'Organic Cold Brew 250ml',
+        supplierName: 'FreshFarm Organics Ltd',
+        mandateClause: 'Mandate Clause 2.1 (Under £500 pre-approved)',
+        status: 'ready_to_send',
+        canExecute: true,
+      },
     },
   ]);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isSending]);
 
   const suggestedQuestions = [
     'Why did we pay FreshFarm £320?',
@@ -92,6 +127,7 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
         sender: 'agent',
         text: data.reply,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actionCard: data.actionCard,
       };
 
       setMessages((prev) => [...prev, agentMsg]);
@@ -270,38 +306,213 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
 
         {/* Live Conversation Stream (collapsible) */}
         {isChatOpen && (
-          <div className="bg-slate-950 rounded-2xl p-3 border border-pink-500/20 max-h-48 overflow-y-auto space-y-2 text-xs">
-            <div className="flex items-center justify-between pb-1 border-b border-white/[0.06]">
-              <span className="text-[10px] font-bold text-pink-400 flex items-center gap-1">
-                <MessageSquare className="w-3 h-3" /> Agent Conversation
+          <div className="bg-slate-950/90 rounded-2xl p-3 border border-pink-500/20 max-h-80 overflow-y-auto space-y-3 text-xs custom-scrollbar">
+            <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
+              <span className="text-[10px] font-bold text-pink-400 flex items-center gap-1.5">
+                <MessageSquare className="w-3 h-3" /> Agent Co-Pilot (Live)
               </span>
-              <button onClick={() => setIsChatOpen(false)} className="text-slate-400 hover:text-white">
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="text-slate-400 hover:text-white p-0.5"
+                title="Minimize chat"
+              >
                 <X className="w-3 h-3" />
               </button>
             </div>
+
             {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`p-2 rounded-xl text-[11px] leading-relaxed ${
-                  m.sender === 'user'
-                    ? 'bg-slate-800 text-slate-100 ml-4'
-                    : 'bg-pink-950/40 text-pink-100 border border-pink-500/20 mr-2'
-                }`}
-              >
-                {m.text}
+              <div key={m.id} className="space-y-1.5">
+                {/* Text Bubble */}
+                <div
+                  className={`p-2.5 rounded-xl text-[11px] leading-relaxed ${
+                    m.sender === 'user'
+                      ? 'bg-slate-800 text-slate-100 ml-5 rounded-tr-xs border border-slate-700/50'
+                      : 'bg-pink-950/30 text-pink-100 border border-pink-500/20 mr-1.5 rounded-tl-xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[9px] opacity-60 mb-0.5">
+                    <span className="font-semibold">{m.sender === 'user' ? 'You' : 'Tillwise Agent'}</span>
+                    <span>{m.time}</span>
+                  </div>
+                  <div>{m.text}</div>
+                </div>
+
+                {/* Rich Action Card rendered in the chat */}
+                {m.actionCard && (
+                  <div className="mr-1.5 space-y-2">
+                    {/* 1. RESTOCK PROPOSAL CARD */}
+                    {m.actionCard.type === 'RESTOCK_PROPOSAL' && (
+                      <div className="bg-gradient-to-br from-sky-950/40 to-slate-900/80 rounded-xl p-2.5 border border-sky-500/30 space-y-2 shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5 text-sky-400" /> PROPOSED RESTOCK
+                          </span>
+                          <span className="text-xs font-mono font-bold text-white">
+                            £{m.actionCard.amountGbp?.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] text-slate-300 leading-snug">
+                          <div className="font-semibold text-white">{m.actionCard.title}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">{m.actionCard.detail}</div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[9px] text-slate-400 font-mono pt-1 border-t border-white/[0.06]">
+                          <span>Floor: £5,000 Safe</span>
+                          <span className="text-emerald-400 font-semibold">Clause 2.1 Authorized</span>
+                        </div>
+
+                        {m.actionCard.canExecute && (
+                          <button
+                            type="button"
+                            disabled={isSending}
+                            onClick={() =>
+                              handleSendMessage(
+                                `Execute restock for ${m.actionCard?.skuName || 'Cold Brew'} ${m.actionCard?.quantity || 40} units`
+                              )
+                            }
+                            className="w-full py-1.5 px-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            <CreditCard className="w-3 h-3" />
+                            <span>Move Money via Stripe (£{m.actionCard.amountGbp?.toFixed(2)})</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 2. RESTOCK EXECUTED (MONEY MOVED) CARD */}
+                    {m.actionCard.type === 'RESTOCK_EXECUTED' && (
+                      <div className="bg-gradient-to-br from-emerald-950/40 to-slate-900/80 rounded-xl p-2.5 border border-emerald-500/40 space-y-2 shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 flex items-center gap-1">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" /> STRIPE SETTLED
+                          </span>
+                          <span className="text-xs font-mono font-bold text-emerald-300">
+                            £{m.actionCard.amountGbp?.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] text-slate-300 leading-snug">
+                          <div className="font-semibold text-white">{m.actionCard.title}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">{m.actionCard.detail}</div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 pt-1 border-t border-white/[0.06]">
+                          <span>Stripe: {m.actionCard.stripeTransferId?.slice(0, 14)}...</span>
+                          <span className="text-emerald-400 font-semibold">100% Reconciled</span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (m.actionCard?.transactionId) {
+                              onInspectPayment(m.actionCard.transactionId);
+                            } else if (latestTxId) {
+                              onInspectPayment(latestTxId);
+                            } else {
+                              toast.info('Opening latest Cognee causal graph');
+                              onSelectTab('payments');
+                            }
+                          }}
+                          className="w-full py-1.5 px-3 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-200 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                        >
+                          <HelpCircle className="w-3 h-3 text-pink-400" />
+                          <span>Audit in Cognee Graph</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 3. COGNEE AUDIT INSPECT CARD */}
+                    {m.actionCard.type === 'AUDIT_INSPECT' && (
+                      <div className="bg-gradient-to-br from-pink-950/40 to-purple-950/40 rounded-xl p-2.5 border border-pink-500/40 space-y-2 shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5 text-pink-400" /> COGNEE CAUSAL PROVENANCE
+                          </span>
+                          <span className="text-xs font-mono font-bold text-pink-300">
+                            £{m.actionCard.amountGbp?.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] text-slate-300 leading-snug">
+                          <div className="font-semibold text-white">{m.actionCard.title}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">{m.actionCard.detail}</div>
+                        </div>
+
+                        <div className="text-[9px] font-mono text-pink-300/80 bg-pink-950/60 p-1.5 rounded border border-pink-500/20">
+                          {m.actionCard.mandateClause || 'Clause 2.1 (Auto-Replenish under £500)'}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (m.actionCard?.transactionId) {
+                              onInspectPayment(m.actionCard.transactionId);
+                            } else if (latestTxId) {
+                              onInspectPayment(latestTxId);
+                            }
+                          }}
+                          className="w-full py-1.5 px-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-slate-950 text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-md shadow-pink-500/20 transition-all cursor-pointer"
+                        >
+                          <HelpCircle className="w-3 h-3 text-slate-950" />
+                          <span>Inspect Multi-Hop Causal Graph</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 4. RULE UPDATED / DEMO RESET CARD */}
+                    {(m.actionCard.type === 'RULE_UPDATED' || m.actionCard.type === 'DEMO_RESET') && (
+                      <div className="bg-slate-900/80 rounded-xl p-2.5 border border-indigo-500/30 space-y-1 shadow-sm">
+                        <div className="text-[11px] font-semibold text-indigo-300">{m.actionCard.title}</div>
+                        <div className="text-[10px] text-slate-400">{m.actionCard.detail}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
+
             {isSending && (
-              <div className="text-[10px] text-slate-400 animate-pulse pl-1">
-                Agent is thinking...
+              <div className="flex items-center gap-1.5 text-[10px] text-pink-400 animate-pulse pl-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Agent reasoning & validating guardrails...</span>
               </div>
             )}
+            <div ref={chatEndRef} />
           </div>
         )}
       </div>
 
-      {/* Docked Chat Input (Origami-style) & Reset Button */}
-      <div className="space-y-3 pt-3 border-t border-white/[0.06]">
+      {/* Docked Chat Input (Origami-style) & Quick Action Pills */}
+      <div className="space-y-2.5 pt-3 border-t border-white/[0.06]">
+        {/* Quick Operational Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+          <button
+            type="button"
+            disabled={isSending}
+            onClick={() => handleSendMessage('Restock 40 units of Cold Brew via Stripe')}
+            className="whitespace-nowrap px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
+          >
+            <CreditCard className="w-2.5 h-2.5" /> Move £320 (Cold Brew)
+          </button>
+          <button
+            type="button"
+            disabled={isSending}
+            onClick={() => handleSendMessage('Why did we pay FreshFarm £320? Audit this payment')}
+            className="whitespace-nowrap px-2.5 py-1 rounded-full bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 text-pink-300 text-[10px] font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
+          >
+            <HelpCircle className="w-2.5 h-2.5" /> Audit £320 (Cognee)
+          </button>
+          <button
+            type="button"
+            disabled={isSending}
+            onClick={() => handleSendMessage('Can we afford 40 units of Cold Brew?')}
+            className="whitespace-nowrap px-2.5 py-1 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-[10px] font-semibold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
+          >
+            <Sparkles className="w-2.5 h-2.5" /> Propose Restock
+          </button>
+        </div>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -313,23 +524,23 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
             type="text"
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
-            placeholder="Ask the agent..."
+            placeholder="Move money or audit in chat..."
             disabled={isSending}
             className="w-full bg-slate-900/90 text-xs text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2.5 pr-10 border border-white/10 focus:outline-none focus:border-pink-500/50 transition-all"
           />
           <button
             type="submit"
             disabled={!inputQuery.trim() || isSending}
-            className="absolute right-1.5 p-1.5 bg-pink-500 hover:bg-pink-400 text-slate-950 rounded-lg disabled:opacity-30 transition-all"
+            className="absolute right-1.5 p-1.5 bg-pink-500 hover:bg-pink-400 text-slate-950 rounded-lg disabled:opacity-30 transition-all cursor-pointer"
           >
             <Send className="w-3 h-3" />
           </button>
         </form>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
           <button
             onClick={onResetDemo}
-            className="hover:text-amber-300 flex items-center gap-1 transition-colors"
+            className="hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3 h-3 text-amber-400" />
             Reset Demo Loop
