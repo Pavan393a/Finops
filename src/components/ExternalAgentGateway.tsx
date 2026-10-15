@@ -24,6 +24,8 @@ import { toast } from 'sonner';
 
 interface ExternalAgentGatewayProps {
   onRefreshData?: () => Promise<void>;
+  operatingMode?: 'in_house' | 'external_mcp' | 'hybrid';
+  onSelectMode?: (mode: 'in_house' | 'external_mcp' | 'hybrid') => void;
 }
 
 interface StepLog {
@@ -35,7 +37,11 @@ interface StepLog {
   output?: any;
 }
 
-export const ExternalAgentGateway: React.FC<ExternalAgentGatewayProps> = ({ onRefreshData }) => {
+export const ExternalAgentGateway: React.FC<ExternalAgentGatewayProps> = ({
+  onRefreshData,
+  operatingMode = 'external_mcp',
+  onSelectMode,
+}) => {
   const [selectedAgent, setSelectedAgent] = useState<'arudno' | 'shopify' | 'claude'>('arudno');
   const [activeScenario, setActiveScenario] = useState<'normal_surge' | 'high_value' | 'insolvency_test'>('normal_surge');
   const [skuTarget, setSkuTarget] = useState<string>('SKU-104');
@@ -247,7 +253,7 @@ export const ExternalAgentGateway: React.FC<ExternalAgentGatewayProps> = ({ onRe
 
   const pythonSnippet = `import requests
 
-# Tillwise Agent-to-Agent Autonomous Protocol Client
+# FinOps Agent-to-Agent Autonomous Protocol Client
 url = "http://localhost:3000/api/agent/tools"
 headers = {
     "Content-Type": "application/json",
@@ -271,12 +277,12 @@ if quote["simulation"]["canExecuteAutonomously"]:
 
   const mcpSnippet = `{
   "mcpServers": {
-    "tillwise-finops": {
+    "finops": {
       "command": "npx",
-      "args": ["-y", "@tillwise/mcp-server"],
+      "args": ["-y", "@finops/mcp-server"],
       "env": {
-        "TILLWISE_ENDPOINT": "http://localhost:3000/api/agent/tools",
-        "TILLWISE_AGENT_ID": "${selectedAgent}-client-v2"
+        "FINOPS_ENDPOINT": "http://localhost:3000/api/agent/tools",
+        "FINOPS_AGENT_ID": "${selectedAgent}-client-v2"
       }
     }
   }
@@ -302,7 +308,46 @@ if quote["simulation"]["canExecuteAutonomously"]:
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {onSelectMode && (
+            <div className="hidden sm:flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-full border border-white/[0.08] text-xs">
+              <span className="text-[10px] text-slate-400 pl-2 pr-1">Active Mode:</span>
+              <button
+                type="button"
+                onClick={() => onSelectMode('in_house')}
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'in_house'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                In-House
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectMode('external_mcp')}
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'external_mcp'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                MCP Delegated
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectMode('hybrid')}
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'hybrid'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Dual Hybrid
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5 bg-indigo-950/80 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-mono text-indigo-300 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
             <span>MCP Protocol Active</span>

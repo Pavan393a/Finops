@@ -18,7 +18,7 @@ export async function seed() {
   const [tenant] = await db
     .insert(tenants)
     .values({
-      name: 'Tillwise Retail Flagship (Soho, London)',
+      name: 'FinOps Retail Flagship (Soho, London)',
       cashBufferFloorGbp: 5000, // £5,000 untouchable buffer
       currentCashBalanceGbp: '6740.00', // £6,740 available cash
       currency: 'GBP',

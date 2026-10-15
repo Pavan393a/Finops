@@ -38,7 +38,7 @@ export const LiquidityHorizon: React.FC<LiquidityHorizonProps> = ({
             </span>
             <span className="text-xs text-slate-400 flex items-center gap-1">
               <Building2 className="w-3.5 h-3.5 text-slate-400" />
-              {storeName || 'Tillwise Retail Flagship Soho'}
+              {storeName || 'FinOps Retail Flagship Soho'}
             </span>
           </div>
 

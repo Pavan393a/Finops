@@ -9,7 +9,7 @@ const POLICY_DATASET = 'tillwise_policy';
 const AUDIT_DATASET = 'tillwise_audit';
 
 export const STORE_MANDATE_TEXT = `
-# Store Spending Mandate v1.0 (Tillwise Retail Flagship Soho)
+# Store Spending Mandate v1.0 (FinOps Retail Flagship Soho)
 - Clause 1.1 (Liquidity Reserve): The store operating account must maintain a minimum cash buffer of £5,000 at all times. No payment can be authorized that breaches this floor.
 - Clause 2.1 (Inventory Auto-Replenishment): Replenishment orders for verified stock items with less than 3 days of cover are pre-authorized up to a maximum of £500 per order without human intervention.
 - Clause 2.2 (Approval Threshold): Any purchase order between £500 and £2,500 requires explicit Store Manager digital authorization.

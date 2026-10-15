@@ -1,4 +1,4 @@
-# Tillwise — Autonomous Retail FinOps Control Plane
+# FinOps — Autonomous Retail Control Plane
 
 > **An autonomous retail FinOps control plane that monitors inventory, moves money on Stripe within strict cash guardrails, and explains every transaction via Cognee causal memory.**
 
@@ -14,10 +14,10 @@ Every retail founder and store operator lives in constant tension between two fa
 
 Traditional software doesn't solve this. Accounts-payable tools are static dashboards that wait for humans to manually enter invoices. LLM chatbots attached to bank accounts are dangerous because language models can hallucinate, suffer prompt injection, or spend money indiscriminately without mathematical guardrails.
 
-**Tillwise was built on a first-principles thesis:**  
+**FinOps was built on a first-principles thesis:**  
 > **"Models may propose and investigate, but deterministic services authorize, execute, and account for money movement."**
 
-Tillwise operates as an autonomous financial control plane. It continuously monitors retail shelf telemetry, calculates optimal economic replenishment, enforces mathematical cash buffer floors, executes live payouts via **Stripe test rails**, and links every single penny to an immutable **Cognee Knowledge Graph** so that founders and auditors can always ask: *"Why did you pay this?"* and receive verifiable causal proof.
+FinOps operates as an autonomous financial control plane. It continuously monitors retail shelf telemetry, calculates optimal economic replenishment, enforces mathematical cash buffer floors, executes live payouts via **Stripe test rails**, and links every single penny to an immutable **Cognee Knowledge Graph** so that founders and auditors can always ask: *"Why did you pay this?"* and receive verifiable causal proof.
 
 ---
 
@@ -30,14 +30,14 @@ How can an external AI agent from **Arudno Labs** actually *act* on its predicti
 - If the retail store founder gives Arudno Labs' agent raw access to corporate bank accounts or credit cards, **the agent could hallucinate, suffer prompt injection, or over-order and drain the store’s cash**.
 - But if Arudno Labs' agent can only send emails or Slack alerts, the store owner is stuck doing manual data entry and midnight wire transfers.
 
-### The Tillwise Solution:
-Instead of raw bank access, **Arudno Labs connects to Tillwise as an Autonomous Financial Gateway via the Model Context Protocol (MCP)** or REST Tools (`POST /api/agent/tools`):
+### The FinOps Solution:
+Instead of raw bank access, **Arudno Labs connects to FinOps as an Autonomous Financial Gateway via the Model Context Protocol (MCP)** or REST Tools (`POST /api/agent/tools`):
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant A as Arudno Labs AI Agent
-    participant T as Tillwise MCP Gateway
+    participant T as FinOps MCP Gateway
     participant P as Policy Membrane (Guardrails)
     participant S as Stripe Rails
     participant C as Cognee Causal Memory
@@ -55,14 +55,14 @@ sequenceDiagram
 
 ### What This Enables:
 1. **Zero-Trust Autonomous Execution**: Arudno Labs' agent can freely manage store stock and initiate supplier payments 24/7 without a human in the loop.
-2. **Mathematical Protection**: Even if Arudno Labs' AI model hallucinates and attempts to order £10,000 of inventory, **Tillwise’s non-LLM policy membrane immediately blocks the transfer** and prevents the £5,000 cash buffer from ever being breached.
+2. **Mathematical Protection**: Even if Arudno Labs' AI model hallucinates and attempts to order £10,000 of inventory, **FinOps’s non-LLM policy membrane immediately blocks the transfer** and prevents the £5,000 cash buffer from ever being breached.
 3. **Complete Attribution & Auditability**: Every pound spent by Arudno Labs is logged in Cognee memory. When the founder asks *"Why did we pay £320?"*, the audit trail confirms: *“Initiated by external agent Arudno Labs v1 based on projected weekend heatwave surge; authorized under Mandate Clause 2.1.”*
 
 ---
 
-## 🔍 How Tillwise Analyzes Retail Operations
+## 🔍 How FinOps Analyzes Retail Operations
 
-Tillwise does not wait for a human to trigger a spreadsheet review. It continuously analyzes operational health through a 3-tier sensory engine:
+FinOps does not wait for a human to trigger a spreadsheet review. It continuously analyzes operational health through a 3-tier sensory engine:
 
 1. **Live Velocity & Stockout Telemetry**:
    - Calculates daily sales velocity ($\text{units/day}$) and real-time days of cover:
@@ -79,7 +79,7 @@ Tillwise does not wait for a human to trigger a spreadsheet review. It continuou
 
 ---
 
-## 💳 How Tillwise Moves Money via Stripe Rails
+## 💳 How FinOps Moves Money via Stripe Rails
 
 Moving real business money without a human in the loop requires **deterministic financial guardrails and idempotent payment execution**:
 
@@ -111,7 +111,7 @@ flowchart LR
 
 ---
 
-## 🧠 How Tillwise Utilizes Cognee Memory
+## 🧠 How FinOps Utilizes Cognee Memory
 
 In an autonomous platform where humans are out of the loop, **Cognee serves as the agent’s semantic policy brain and immutable causal audit memory**.
 
@@ -124,14 +124,14 @@ flowchart TD
     end
 
     M -->|"cognee.add_text & cognify"| G
-    G -->|"Semantic Policy Query"| Agent["Tillwise Agent"]
+    G -->|"Semantic Policy Query"| Agent["FinOps Agent"]
     Agent -->|"Executes Stripe Transfer"| Stripe["Stripe Rails"]
     Stripe -->|"Ingests Causal Chain"| A
     Auditor["Founder / Auditor / Chat Pop:\n'Why did you pay £320?'"] -->|"1-Click Visual Graph"| A
 ```
 
 ### 1. Ingesting the Financial Constitution (`syncMandateToCognee`)
-Tillwise syncs its plain-English store spending rules into Cognee's `tillwise_policy` dataset and triggers `POST /api/v1/cognify`. Cognee builds a semantic knowledge graph representing:
+FinOps syncs its plain-English store spending rules into Cognee's policy dataset and triggers `POST /api/v1/cognify`. Cognee builds a semantic knowledge graph representing:
 - **Clause 1.1**: £5,000 operating cash reserve.
 - **Clause 2.1**: Autonomous inventory replenishment pre-approved under £500.
 - **Clause 2.2**: Dual-authorization threshold for orders above £500.
@@ -141,7 +141,7 @@ Tillwise syncs its plain-English store spending rules into Cognee's `tillwise_po
 Before executing an order, the agent queries Cognee to find which specific clause justifies the expenditure. Cognee searches the graph and returns the governing citation (e.g., `Mandate v1.0, Clause 2.1`).
 
 ### 3. Causal Provenance & "Why Did You Pay This?" (`recordPaymentMemory`)
-When a payment settles on Stripe, Tillwise ingests the complete causal rationale into Cognee's `tillwise_audit` dataset:
+When a payment settles on Stripe, FinOps ingests the complete causal rationale into Cognee's audit dataset:
 - **Telemetry State**: Cold Brew stock dropped to 18 units (1.8 days cover).
 - **Economic Loss**: Supplier lead time is 2 days; stockout would cause £1,200 in lost margin.
 - **Policy Compliance**: Order amount (£320) is within Clause 2.1; post-order cash (£5,460) preserves the £5,000 buffer.
@@ -155,9 +155,9 @@ When a payment settles on Stripe, Tillwise ingests the complete causal rationale
 
 ## 🏆 Track 01 ("Agents that Spend") — Requirements & Implementation
 
-Tillwise directly fulfills every core requirement of **Track 01 ("Agents that spend")** by proving that autonomous AI agents can move real business capital safely without human supervision:
+FinOps directly fulfills every core requirement of **Track 01 ("Agents that spend")** by proving that autonomous AI agents can move real business capital safely without human supervision:
 
-| Track 01 Requirement | How Tillwise Satisfies It | Implementation In Code |
+| Track 01 Requirement | How FinOps Satisfies It | Implementation In Code |
 | :--- | :--- | :--- |
 | **1. Programmatic Money Movement** | The agent directly transfers real capital in Stripe test mode to supplier accounts without waiting for manual banking approval. | [`src/lib/payment/stripe.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/lib/payment/stripe.ts) (`stripe.transfers.create`) |
 | **2. Multi-Party Payouts (Connect)** | Disburses funds directly to verified vendor accounts (`acct_1FreshFarmTestGBP`, `acct_1EcoPackTestGBP`). | [`src/lib/db/schema.ts`](file:///Users/pavanmorla/Desktop/Saas/Finops/src/lib/db/schema.ts#L16-L30) (`suppliers.stripeConnectedAccountId`) |
@@ -268,7 +268,7 @@ External agents integrate directly without human intervention via the **Model Co
 1. **Discovery**: Calls `GET /api/agent/tools` to receive typed JSON schemas for store tools.
 2. **Telemetry Query**: Calls `POST /api/agent/tools` with `{"tool": "get_store_telemetry"}` to read current cash, safe spend, and stock runout.
 3. **Dispatching Actions**: Calls `{"tool": "investigate_and_reorder_sku", "arguments": {"skuId": "SKU-104", "customQuantity": 20}}`.
-4. **Deterministic Protection**: The external agent cannot force Tillwise to overspend; Tillwise’s internal membrane checks the cash floor before executing the Stripe transfer.
+4. **Deterministic Protection**: The external agent cannot force FinOps to overspend; FinOps’s internal membrane checks the cash floor before executing the Stripe transfer.
 5. **Audit Retrieval**: Calls `{"tool": "query_cognee_provenance"}` to retrieve the immutable Cognee memory record.
 
 ---
@@ -346,4 +346,4 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 ---
 
 ## 📄 License
-MIT © 2026 Tillwise Retail FinOps Control Plane. Built for Hackathon Track 01 & Cognee Side Quest.
+MIT © 2026 FinOps Autonomous Retail Control Plane. Built for Hackathon Track 01 & Cognee Side Quest.

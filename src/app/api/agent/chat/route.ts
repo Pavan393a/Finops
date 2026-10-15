@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
           actionCard = {
             type: 'RULE_UPDATED',
             title: `Safety Buffer Floor: £${newFloor.toLocaleString()}`,
-            detail: `Store spending guardrail updated. Tillwise will never spend if bank balance drops below £${newFloor.toLocaleString()}.`,
+            detail: `Store spending guardrail updated. FinOps will never spend if bank balance drops below £${newFloor.toLocaleString()}.`,
             amountGbp: newFloor,
             status: 'settled',
           };
@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
     }
 
     const systemPrompt = `
-You are the Tillwise Store Operations AI Agent.
+You are the FinOps Store Operations AI Agent.
 You manage retail store inventory, financial guardrails, and money movement on behalf of the store manager.
 
 Tone & Style:
@@ -243,7 +243,7 @@ Tone & Style:
 - If an action was executed, tell the user the exact amount paid via Stripe and the stock level.
 
 Current Live Store Facts:
-- Store: ${tenant?.name || 'Tillwise Soho Flagship'}
+- Store: ${tenant?.name || 'FinOps Soho Flagship'}
 - Available Cash in Bank: £${cashBalance}
 - Protected Safety Buffer: £${floor} (we never spend below this to protect payroll & rent)
 - Safe to Spend Right Now: £${safeToSpend}

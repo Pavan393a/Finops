@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
-  title: 'Tillwise — Autonomous Retail FinOps Control Plane',
+  title: 'FinOps — Autonomous Retail Control Plane',
   description: 'AI Agent that monitors retail store inventory, enforces financial spending mandates, and executes real money movements via Stripe test rails with Cognee knowledge graph provenance.',
 };
 

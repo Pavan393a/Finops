@@ -14,12 +14,13 @@ import { SpendingRulesView } from '@/components/SpendingRulesView';
 import { LiveStoreSimulator } from '@/components/LiveStoreSimulator';
 import { ExternalAgentGateway } from '@/components/ExternalAgentGateway';
 import { ActivityLogItem } from '@/components/AgentActivityLog';
-import { Sparkles, User, Zap } from 'lucide-react';
+import { Sparkles, User, Zap, Cpu } from 'lucide-react';
 
 export default function FinOpsCanvasPage() {
   const [storeData, setStoreData] = useState<any>(null);
   const [activeCards, setActiveCards] = useState<DecisionCardData[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'stock' | 'payments' | 'rules' | 'bills' | 'agent-api'>('overview');
+  const [operatingMode, setOperatingMode] = useState<'in_house' | 'external_mcp' | 'hybrid'>('in_house');
   const [isSyncingMandate, setIsSyncingMandate] = useState(false);
   const [isInvestigatingSkuId, setIsInvestigatingSkuId] = useState<string | null>(null);
   const [isProcessingCardId, setIsProcessingCardId] = useState<string | null>(null);
@@ -264,7 +265,7 @@ export default function FinOpsCanvasPage() {
 
   const currentCash = storeData ? parseFloat(storeData.tenant.currentCashBalanceGbp) : 6740;
   const cashFloor = storeData ? storeData.tenant.cashBufferFloorGbp : 5000;
-  const storeName = storeData?.tenant?.name || 'Tillwise Retail Flagship Soho';
+  const storeName = storeData?.tenant?.name?.replace(/Tillwise/g, 'FinOps') || 'FinOps Retail Flagship Soho';
   const latestTx = storeData?.recentTransactions?.[0]?.id;
 
   // Derive dynamic activity logs (Human Out of the Loop)
@@ -323,6 +324,7 @@ export default function FinOpsCanvasPage() {
         onInspectPayment={handleInspectCognee}
         latestTxId={latestTx}
         onRefreshData={fetchStoreStatus}
+        operatingMode={operatingMode}
       />
 
       {/* 2. Main Content Canvas */}
@@ -332,9 +334,57 @@ export default function FinOpsCanvasPage() {
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-400">Store:</span>
             <span className="text-sm font-bold text-white tracking-tight">{storeName}</span>
-            <div className="hidden md:flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Auto-Pilot Monitoring Live (5s)</span>
+
+            {/* Dynamic Authority Switcher */}
+            <div className="hidden lg:flex items-center gap-1 bg-slate-900/80 p-0.5 rounded-full border border-white/[0.08] text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setOperatingMode('in_house');
+                  toast.success('Mode: In-House Agent (FinOps continuous 24/7 autonomous monitoring)');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'in_house'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>In-House Agent</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOperatingMode('external_mcp');
+                  handleSelectTab('agent-api');
+                  toast.success('Mode: External Agent (Delegated via MCP Gateway to Arudno Labs)');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'external_mcp'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Cpu className="w-3 h-3 text-indigo-400" />
+                <span>External Agent (MCP)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOperatingMode('hybrid');
+                  toast.success('Mode: Dual-Agent Hybrid (External predictive surge audited by In-House agent)');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                  operatingMode === 'hybrid'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Sparkles className="w-3 h-3 text-purple-400" />
+                <span>Dual-Agent Hybrid</span>
+              </button>
             </div>
           </div>
 
@@ -496,7 +546,11 @@ export default function FinOpsCanvasPage() {
 
           {/* View Tab 6: External AI Agent Interoperability Gateway */}
           {activeTab === 'agent-api' && (
-            <ExternalAgentGateway onRefreshData={fetchStoreStatus} />
+            <ExternalAgentGateway
+              onRefreshData={fetchStoreStatus}
+              operatingMode={operatingMode}
+              onSelectMode={setOperatingMode}
+            />
           )}
         </main>
       </div>

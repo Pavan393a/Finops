@@ -50,6 +50,7 @@ interface OrigamiSidebarProps {
   onInspectPayment: (txId: string) => void;
   latestTxId?: string;
   onRefreshData: () => Promise<void>;
+  operatingMode?: 'in_house' | 'external_mcp' | 'hybrid';
 }
 
 export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
@@ -59,6 +60,7 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
   onInspectPayment,
   latestTxId,
   onRefreshData,
+  operatingMode = 'in_house',
 }) => {
   const [inputQuery, setInputQuery] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -157,14 +159,36 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
               🌸
             </div>
             <div>
-              <span className="font-bold text-white text-sm tracking-tight">Tillwise</span>
+              <span className="font-bold text-white text-sm tracking-tight">FinOps</span>
               <span className="text-[9px] text-slate-400 block -mt-0.5">Autonomous Retail Ops</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[9px] font-medium text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Active
+          <div
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium border ${
+              operatingMode === 'in_house'
+                ? 'bg-emerald-950/60 border-emerald-500/30 text-emerald-400'
+                : operatingMode === 'external_mcp'
+                ? 'bg-indigo-950/60 border-indigo-500/30 text-indigo-400'
+                : 'bg-purple-950/60 border-purple-500/30 text-purple-400'
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                operatingMode === 'in_house'
+                  ? 'bg-emerald-400'
+                  : operatingMode === 'external_mcp'
+                  ? 'bg-indigo-400'
+                  : 'bg-purple-400'
+              }`}
+            />
+            <span>
+              {operatingMode === 'in_house'
+                ? 'In-House'
+                : operatingMode === 'external_mcp'
+                ? 'MCP Active'
+                : 'Dual-Agent'}
+            </span>
           </div>
         </div>
 
@@ -333,7 +357,7 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between text-[8px] opacity-60 mb-0.5">
-                    <span className="font-semibold">{m.sender === 'user' ? 'Store Manager' : 'Tillwise Agent'}</span>
+                    <span className="font-semibold">{m.sender === 'user' ? 'Store Manager' : 'FinOps Agent'}</span>
                     <span>{m.time}</span>
                   </div>
                   <div>{m.text}</div>

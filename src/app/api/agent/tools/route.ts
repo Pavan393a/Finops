@@ -68,7 +68,7 @@ const AGENT_TOOLS = [
 
 export async function GET() {
   return NextResponse.json({
-    platform: 'Tillwise Autonomous Retail FinOps Control Plane',
+    platform: 'FinOps Autonomous Retail Control Plane',
     protocolVersion: '1.0.0',
     description: 'Agent-to-Agent interoperability gateway for external AI systems (e.g. Arudno Labs, AutoGPT, supply chain agents).',
     tools: AGENT_TOOLS,

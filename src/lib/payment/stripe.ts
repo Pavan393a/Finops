@@ -67,7 +67,7 @@ export async function executeStripePayment(input: ExecutePaymentInput): Promise<
           amount: input.amountPence,
           currency: 'gbp',
           destination: input.destinationAccountId,
-          description: `Tillwise settlement: ${input.skuName} reorder. Authorized by ${input.clauseCited}`,
+          description: `FinOps settlement: ${input.skuName} reorder. Authorized by ${input.clauseCited}`,
           metadata: {
             tenantId: input.tenantId,
             agentRunId: input.agentRunId,

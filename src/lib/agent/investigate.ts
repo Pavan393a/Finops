@@ -112,7 +112,7 @@ export async function runAgentInvestigation(input: InvestigateInput): Promise<In
 
   // 5. Run LLM Structured Reasoning with OpenAI
   const prompt = `
-You are Tillwise, an Autonomous Retail FinOps Control Plane agent.
+You are FinOps, an Autonomous Retail Control Plane agent.
 Investigate this retail inventory telemetry and construct an optimal purchase proposal:
 
 Store Context:
@@ -147,7 +147,7 @@ Instructions:
     schema: ProposalPlanSchema,
     prompt,
     system:
-      'You are Tillwise, an expert autonomous retail financial controller. Output strict JSON matching the schema.',
+      'You are FinOps, an expert autonomous retail financial controller. Output strict JSON matching the schema.',
   });
 
   // Ensure IDs & constants match DB ground truth
