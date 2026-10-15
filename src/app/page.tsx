@@ -11,16 +11,21 @@ import { ThreeWayMatchLab } from '@/components/ThreeWayMatchLab';
 import { TransactionStream } from '@/components/TransactionStream';
 import { SkuDetailDrawer } from '@/components/SkuDetailDrawer';
 import { SpendingRulesView } from '@/components/SpendingRulesView';
-import { Sparkles, User } from 'lucide-react';
+import { LiveStoreSimulator } from '@/components/LiveStoreSimulator';
+import { ExternalAgentGateway } from '@/components/ExternalAgentGateway';
+import { ActivityLogItem } from '@/components/AgentActivityLog';
+import { Sparkles, User, Zap } from 'lucide-react';
 
 export default function FinOpsCanvasPage() {
   const [storeData, setStoreData] = useState<any>(null);
   const [activeCards, setActiveCards] = useState<DecisionCardData[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'stock' | 'payments' | 'rules' | 'bills'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'stock' | 'payments' | 'rules' | 'bills' | 'agent-api'>('overview');
   const [isSyncingMandate, setIsSyncingMandate] = useState(false);
   const [isInvestigatingSkuId, setIsInvestigatingSkuId] = useState<string | null>(null);
   const [isProcessingCardId, setIsProcessingCardId] = useState<string | null>(null);
   const [selectedDrawerSku, setSelectedDrawerSku] = useState<SkuItem | null>(null);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [isAutoPilotActive, setIsAutoPilotActive] = useState(true);
 
   // Inspector Modal State
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -237,6 +242,52 @@ export default function FinOpsCanvasPage() {
   const storeName = storeData?.tenant?.name || 'Tillwise Retail Flagship Soho';
   const latestTx = storeData?.recentTransactions?.[0]?.id;
 
+  // Derive dynamic activity logs (Human Out of the Loop)
+  const activityLogs: ActivityLogItem[] = React.useMemo(() => {
+    const list: ActivityLogItem[] = [];
+
+    // 1. Transactions (Money Moved via Stripe)
+    if (storeData?.recentTransactions) {
+      storeData.recentTransactions.forEach((tx: any) => {
+        list.push({
+          id: `tx-${tx.id}`,
+          timestamp: new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: 'MONEY_MOVED',
+          title: `Autonomous Payment: £${(tx.amountPence / 100).toFixed(2)}`,
+          detail: `Transferred via Stripe Test Rails (${tx.stripeTransferId || 'tr_test_settled'}). Idempotency key verified.`,
+          amountGbp: tx.amountPence / 100,
+          stripeTransferId: tx.stripeTransferId,
+          transactionId: tx.id,
+        });
+      });
+    }
+
+    // 2. Critical stock observation
+    const critical = storeData?.skus?.find((s: any) => s.status === 'CRITICAL');
+    if (critical) {
+      list.unshift({
+        id: `crit-${critical.id}`,
+        timestamp: 'Just now',
+        type: 'OBSERVE',
+        title: `Telemetry Alert: ${critical.name} Low Stock`,
+        detail: `Stock level dropped to ${critical.currentStock} units (${critical.daysOfCover} days remaining). Reorder threshold breached.`,
+        clauseCited: 'Rule 2.1 Pre-Authorised Restock',
+      });
+    }
+
+    // 3. Baseline rule observation
+    list.push({
+      id: 'rule-baseline',
+      timestamp: 'Today',
+      type: 'RULE_CHECK',
+      title: 'Store Spending Rules Active',
+      detail: `Operating buffer floor £${cashFloor.toLocaleString()} protected. Pre-authorized spend limit: £500 per order.`,
+      clauseCited: 'Mandate v1.0',
+    });
+
+    return list;
+  }, [storeData, cashFloor]);
+
   return (
     <div className="min-h-screen bg-[#080c16] text-slate-100 flex flex-col lg:flex-row antialiased">
       {/* 1. Left Sidebar (Origami Design Pattern) */}
@@ -265,14 +316,25 @@ export default function FinOpsCanvasPage() {
             <div className={`w-6 h-1 rounded-full ${activeTab === 'payments' ? 'bg-pink-500' : 'bg-slate-700'}`} />
             <div className={`w-6 h-1 rounded-full ${activeTab === 'rules' ? 'bg-pink-500' : 'bg-slate-700'}`} />
             <div className={`w-6 h-1 rounded-full ${activeTab === 'bills' ? 'bg-pink-500' : 'bg-slate-700'}`} />
+            <div className={`w-6 h-1 rounded-full ${activeTab === 'agent-api' ? 'bg-indigo-500' : 'bg-slate-700'}`} />
           </div>
 
-          {/* User Profile */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs shadow-md">
-              P
+          {/* Actions & User Profile */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSimulatorOpen(true)}
+              className="text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Live Simulator</span>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                P
+              </div>
+              <span className="text-xs font-semibold text-slate-200 hidden sm:inline">Pavan</span>
             </div>
-            <span className="text-xs font-semibold text-slate-200 hidden sm:inline">Pavan</span>
           </div>
         </header>
 
@@ -316,6 +378,9 @@ export default function FinOpsCanvasPage() {
               onInspectPayment={handleInspectCognee}
               latestTransactions={storeData?.recentTransactions || []}
               isInvestigating={isInvestigatingSkuId !== null}
+              isAutoPilotActive={isAutoPilotActive}
+              onToggleAutoPilot={() => setIsAutoPilotActive(!isAutoPilotActive)}
+              activityLogs={activityLogs}
             />
           )}
 
@@ -340,6 +405,8 @@ export default function FinOpsCanvasPage() {
           {/* View Tab 4: Spending Rules */}
           {activeTab === 'rules' && (
             <SpendingRulesView
+              currentFloorGbp={cashFloor}
+              onRefreshData={fetchStoreStatus}
               onSyncMandate={handleSyncMandate}
               isSyncing={isSyncingMandate}
             />
@@ -348,6 +415,11 @@ export default function FinOpsCanvasPage() {
           {/* View Tab 5: 3-Way Match & Fraud Defense Lab */}
           {activeTab === 'bills' && (
             <ThreeWayMatchLab purchaseOrders={storeData?.purchaseOrders || []} />
+          )}
+
+          {/* View Tab 6: External AI Agent Interoperability Gateway */}
+          {activeTab === 'agent-api' && (
+            <ExternalAgentGateway onRefreshData={fetchStoreStatus} />
           )}
         </main>
       </div>
@@ -367,6 +439,14 @@ export default function FinOpsCanvasPage() {
         onClose={() => setInspectorOpen(false)}
         data={inspectorData}
         isLoading={inspectorLoading}
+      />
+
+      {/* Interactive Live Store Simulator Modal */}
+      <LiveStoreSimulator
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        skus={storeData?.skus || []}
+        onRefreshData={fetchStoreStatus}
       />
     </div>
   );

@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { SkuItem } from './InventorySheet';
+import { AgentActivityLog, ActivityLogItem } from './AgentActivityLog';
 
 interface AppleStoreOverviewProps {
   currentCashGbp: number;
@@ -26,6 +27,9 @@ interface AppleStoreOverviewProps {
   onInspectPayment: (txId: string) => void;
   latestTransactions: any[];
   isInvestigating: boolean;
+  isAutoPilotActive: boolean;
+  onToggleAutoPilot: () => void;
+  activityLogs: ActivityLogItem[];
 }
 
 export const AppleStoreOverview: React.FC<AppleStoreOverviewProps> = ({
@@ -37,6 +41,9 @@ export const AppleStoreOverview: React.FC<AppleStoreOverviewProps> = ({
   onInspectPayment,
   latestTransactions,
   isInvestigating,
+  isAutoPilotActive,
+  onToggleAutoPilot,
+  activityLogs,
 }) => {
   const safeSpendGbp = Math.max(0, currentCashGbp - cashFloorGbp);
   const criticalSku = skus.find((s) => s.status === 'CRITICAL') || skus[0];
@@ -247,7 +254,15 @@ export const AppleStoreOverview: React.FC<AppleStoreOverviewProps> = ({
         </div>
       </section>
 
-      {/* 4. Recent Money Moved (Stripe Proof) */}
+      {/* 4. Autonomous Agent Activity Log (Human Out of the Loop) */}
+      <AgentActivityLog
+        logs={activityLogs}
+        isAutoPilotActive={isAutoPilotActive}
+        onToggleAutoPilot={onToggleAutoPilot}
+        onInspectProof={onInspectPayment}
+      />
+
+      {/* 5. Recent Money Moved (Stripe Proof) */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono uppercase tracking-wider text-slate-400">

@@ -15,6 +15,7 @@ import {
   HelpCircle,
   MessageSquare,
   X,
+  Cpu,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,8 +27,8 @@ interface Message {
 }
 
 interface OrigamiSidebarProps {
-  activeTab: 'overview' | 'stock' | 'payments' | 'rules' | 'bills';
-  onSelectTab: (tab: 'overview' | 'stock' | 'payments' | 'rules' | 'bills') => void;
+  activeTab: 'overview' | 'stock' | 'payments' | 'rules' | 'bills' | 'agent-api';
+  onSelectTab: (tab: 'overview' | 'stock' | 'payments' | 'rules' | 'bills' | 'agent-api') => void;
   onResetDemo: () => Promise<void>;
   onInspectPayment: (txId: string) => void;
   latestTxId?: string;
@@ -208,6 +209,23 @@ export const OrigamiSidebar: React.FC<OrigamiSidebarProps> = ({
               <span>3-Way Match & Bills</span>
             </div>
             <ChevronRight className="w-3.5 h-3.5 opacity-40" />
+          </button>
+
+          <button
+            onClick={() => onSelectTab('agent-api')}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'agent-api'
+                ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/30 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Cpu className="w-4 h-4 text-indigo-400" />
+              <span>External Agent Interop</span>
+            </div>
+            <span className="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-full font-bold">
+              MCP
+            </span>
           </button>
         </div>
 
