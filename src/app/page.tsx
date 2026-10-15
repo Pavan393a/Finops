@@ -240,6 +240,23 @@ export default function FinOpsCanvasPage() {
     }
   };
 
+  // 8. Reset Demo State Handler
+  const handleResetDemo = async () => {
+    try {
+      const res = await fetch('/api/demo/reset', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setActiveCards([]);
+        await fetchStoreStatus();
+      } else {
+        toast.error(`Reset failed: ${data.error}`);
+      }
+    } catch (err: any) {
+      toast.error(`Reset error: ${err.message}`);
+    }
+  };
+
   const currentCash = storeData ? parseFloat(storeData.tenant.currentCashBalanceGbp) : 6740;
   const cashFloor = storeData ? storeData.tenant.cashBufferFloorGbp : 5000;
   const storeName = storeData?.tenant?.name || 'Tillwise Retail Flagship Soho';
@@ -260,27 +277,38 @@ export default function FinOpsCanvasPage() {
             </div>
           </div>
 
-          {/* Navigation Pill Toggles */}
-          <div className="flex items-center gap-1 bg-slate-900/80 border border-white/[0.08] p-1 rounded-xl text-xs font-semibold">
+          {/* Navigation Pill Toggles & Reset Demo */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-900/80 border border-white/[0.08] p-1 rounded-xl text-xs font-semibold">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  activeTab === 'overview'
+                    ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Control Canvas
+              </button>
+              <button
+                onClick={() => setActiveTab('threeway')}
+                className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  activeTab === 'threeway'
+                    ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                3-Way Match & Fraud Lab
+              </button>
+            </div>
+
             <button
-              onClick={() => setActiveTab('overview')}
-              className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                activeTab === 'overview'
-                  ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              onClick={handleResetDemo}
+              title="Reset store balance to £6,740 and restore SKU-104 stockout alert"
+              className="text-xs font-medium text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-white/10 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all"
             >
-              Control Canvas
-            </button>
-            <button
-              onClick={() => setActiveTab('threeway')}
-              className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                activeTab === 'threeway'
-                  ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              3-Way Match & Fraud Lab
+              <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Reset Demo</span>
             </button>
           </div>
 
