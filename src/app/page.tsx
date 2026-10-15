@@ -310,13 +310,49 @@ export default function FinOpsCanvasPage() {
           </div>
 
           {/* Minimalist Step Progress Indicators (From Origami screenshot) */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'overview' ? 'bg-pink-500' : 'bg-slate-700'}`} />
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'stock' ? 'bg-pink-500' : 'bg-slate-700'}`} />
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'payments' ? 'bg-pink-500' : 'bg-slate-700'}`} />
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'rules' ? 'bg-pink-500' : 'bg-slate-700'}`} />
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'bills' ? 'bg-pink-500' : 'bg-slate-700'}`} />
-            <div className={`w-6 h-1 rounded-full ${activeTab === 'agent-api' ? 'bg-indigo-500' : 'bg-slate-700'}`} />
+          <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/60 p-1 rounded-full border border-white/[0.04]">
+            <button
+              onClick={() => setActiveTab('overview')}
+              title="Store Overview"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'overview' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('stock')}
+              title="Inventory & Stock"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'stock' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('payments')}
+              title="Money Moved (Stripe)"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'payments' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('rules')}
+              title="Spending Rules"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'rules' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('bills')}
+              title="3-Way Match & Bills"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'bills' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
+            <button
+              onClick={() => setActiveTab('agent-api')}
+              title="External Agent Interop"
+              className={`w-6 h-1.5 rounded-full transition-all ${
+                activeTab === 'agent-api' ? 'bg-indigo-500 scale-110 shadow-sm shadow-indigo-500/50' : 'bg-slate-700 hover:bg-slate-600'
+              }`}
+            />
           </div>
 
           {/* Actions & User Profile */}
