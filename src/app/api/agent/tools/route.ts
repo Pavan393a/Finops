@@ -52,6 +52,18 @@ const AGENT_TOOLS = [
       required: ['transactionId'],
     },
   },
+  {
+    name: 'simulate_mandate_quote',
+    description: 'Pre-flight check that models whether an external agent restock action will be permitted, escalated, or blocked by the deterministic financial membrane without executing money movement.',
+    parameters: {
+      type: 'object',
+      properties: {
+        skuId: { type: 'string', description: 'The unique SKU ID (e.g., SKU-104)' },
+        quantity: { type: 'number', description: 'Proposed units to reorder' },
+      },
+      required: ['skuId', 'quantity'],
+    },
+  },
 ];
 
 export async function GET() {
@@ -188,6 +200,51 @@ export async function POST(req: NextRequest) {
             graphNodeId: `cognee_node_${Date.now()}`,
             immutableAuditStatus: 'VERIFIED',
             humanIntervention: 'NONE_REQUIRED_AUTONOMOUS',
+          },
+        });
+      }
+
+      case 'simulate_mandate_quote': {
+        const { skuId, quantity } = args || {};
+        const allSkus = await db.select().from(skus).where(eq(skus.tenantId, tenant.id));
+        const matchedSku =
+          allSkus.find((s) => s.id === skuId || s.code.toLowerCase() === (skuId || '').toLowerCase()) || allSkus[0];
+
+        const units = quantity ? parseInt(quantity, 10) : 32;
+        const unitCostGbp = matchedSku.unitCostPence / 100;
+        const totalCostGbp = unitCostGbp * units;
+        const projectedCashGbp = currentCashGbp - totalCostGbp;
+        const bufferFloor = tenant.cashBufferFloorGbp;
+
+        let decision: 'AUTO' | 'ESCALATE' | 'BLOCK' = 'AUTO';
+        let clauseCited = 'Mandate Clause 2.1 (Auto-Replenish under £500 pre-authorized)';
+        let reason = `Projected balance £${projectedCashGbp.toFixed(2)} maintains safety buffer floor of £${bufferFloor.toLocaleString()}.`;
+
+        if (projectedCashGbp < bufferFloor) {
+          decision = 'BLOCK';
+          clauseCited = 'Mandate Clause 1.1 (Insolvency Protection Floor)';
+          reason = `Disbursement of £${totalCostGbp.toFixed(2)} would breach the £${bufferFloor.toLocaleString()} reserve (projected cash: £${projectedCashGbp.toFixed(2)}).`;
+        } else if (totalCostGbp > 500) {
+          decision = 'ESCALATE';
+          clauseCited = 'Mandate Clause 2.2 (Discretionary Approval > £500)';
+          reason = `Order value £${totalCostGbp.toFixed(2)} exceeds £500 autonomous limit. Requires Human-in-the-Loop authorization.`;
+        }
+
+        return NextResponse.json({
+          status: 'SUCCESS',
+          simulation: {
+            skuCode: matchedSku.code,
+            skuName: matchedSku.name,
+            quantity: units,
+            unitCostGbp,
+            totalCostGbp,
+            currentCashGbp,
+            projectedCashGbp,
+            bufferFloorGbp: bufferFloor,
+            decision,
+            clauseCited,
+            reason,
+            canExecuteAutonomously: decision === 'AUTO',
           },
         });
       }
