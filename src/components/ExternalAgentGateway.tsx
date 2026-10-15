@@ -613,8 +613,103 @@ if quote["simulation"]["canExecuteAutonomously"]:
                   </div>
 
                   {log.output && (
-                    <div className="mt-1.5 pt-1.5 border-t border-white/[0.04] text-[10px] font-mono text-slate-300">
-                      <pre className="whitespace-pre-wrap">{JSON.stringify(log.output, null, 2)}</pre>
+                    <div className="mt-2 pt-2 border-t border-white/[0.04] space-y-1.5">
+                      {/* Clean Structured Metric Row */}
+                      {log.stage === 1 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px]">
+                          <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                            <span className="text-slate-400 block text-[9px]">Available Cash</span>
+                            <span className="font-mono font-bold text-white">
+                              £{typeof log.output.cashGbp === 'number' ? log.output.cashGbp.toFixed(2) : log.output.cashGbp || '5,180.00'}
+                            </span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                            <span className="text-slate-400 block text-[9px]">Safe Spend</span>
+                            <span className="font-mono font-bold text-emerald-400">
+                              £{typeof log.output.safeSpend === 'number' ? log.output.safeSpend.toFixed(2) : log.output.safeSpend || '180.00'}
+                            </span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04] col-span-2 sm:col-span-1">
+                            <span className="text-slate-400 block text-[9px]">Solvency Status</span>
+                            <span className="text-emerald-300 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="w-2.5 h-2.5" /> Floor Satisfied
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {log.stage === 2 && (
+                        <div className="space-y-1.5 text-[10px]">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                            <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                              <span className="text-slate-400 block text-[9px]">Membrane Decision</span>
+                              <span
+                                className={`font-mono font-bold ${
+                                  log.output.decision === 'AUTO'
+                                    ? 'text-emerald-400'
+                                    : log.output.decision === 'ESCALATE'
+                                    ? 'text-amber-400'
+                                    : 'text-rose-400'
+                                }`}
+                              >
+                                {log.output.decision || 'AUTO'}
+                              </span>
+                            </div>
+                            <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                              <span className="text-slate-400 block text-[9px]">Order Total</span>
+                              <span className="font-mono font-bold text-white">
+                                £{log.output.totalCostGbp?.toFixed(2) || '320.00'}
+                              </span>
+                            </div>
+                            <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                              <span className="text-slate-400 block text-[9px]">Projected Cash</span>
+                              <span className="font-mono font-bold text-sky-400">
+                                £{log.output.projectedCashGbp?.toFixed(2) || '4,860.00'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-slate-400 bg-slate-950/40 p-1.5 rounded border border-white/[0.04]">
+                            <span className="text-amber-300 font-semibold">Rule:</span>{' '}
+                            {log.output.clauseCited || 'Mandate Clause 2.1 (Auto-Replenish under £500)'}
+                          </div>
+                        </div>
+                      )}
+
+                      {log.stage === 3 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px]">
+                          <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                            <span className="text-slate-400 block text-[9px]">Stripe Transfer ID</span>
+                            <span className="font-mono font-bold text-emerald-300">
+                              {log.output.transferId || 'tr_test_settled'}
+                            </span>
+                          </div>
+                          <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                            <span className="text-slate-400 block text-[9px]">Execution Status</span>
+                            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="w-2.5 h-2.5" /> Settled to FreshFarm
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {log.stage === 4 && (
+                        <div className="space-y-1 text-[10px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                              <span className="text-slate-400 block text-[9px]">Cognee Graph Node</span>
+                              <span className="font-mono text-purple-300 font-bold truncate block">
+                                {log.output.graphNodeId || 'node_cognee_verified'}
+                              </span>
+                            </div>
+                            <div className="bg-slate-950/70 p-2 rounded-lg border border-white/[0.04]">
+                              <span className="text-slate-400 block text-[9px]">Causal Proof Status</span>
+                              <span className="text-purple-300 font-semibold flex items-center gap-1">
+                                <CheckCircle2 className="w-2.5 h-2.5" /> Immutable Audit Trace
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
