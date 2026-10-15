@@ -1,0 +1,523 @@
+here is the thing [Finops](file;file:///Users/pavanmorla/Desktop/Saas/Finops) here is my idea 
+Tillwise: Sophisticated Agentic Retail FinOps
+Executive Summary
+Tillwise should be designed as an agentic financial control plane for retail businesses, not as a conventional accounts-payable dashboard with a chatbot attached. The product observes financial and operational events, assembles evidence, creates an explainable recommendation, applies deterministic policy, requests human approval when necessary, executes an authorized payment, and reconciles the result against authoritative financial records.
+
+The core design rule is: models may propose and investigate, but deterministic services authorize, execute, and account for money movement. This separation is essential because agentic systems face prompt injection, excessive autonomy, tool abuse, approval manipulation, and high-impact action risk; OWASP therefore recommends least-privilege tools, independent authorization, human oversight for high-risk actions, and separation of decision-making from execution.
+
+The current Charming prototype already contains useful domain primitives—obligations, accounts, decisions, policy snapshots, approvals, actions, reconciliation, and an audit trail—but its runAgentCycle is a fixed JavaScript rules loop. It does not yet use a model to plan, dynamically select tools, resolve missing evidence, critique a proposal, suspend and resume a durable run, or evaluate model performance.
+
+The production architecture should therefore use Charming as the prototype/operator experience while introducing an external durable agent runtime, transactional financial services, typed tools, policy enforcement, payment adapters, reconciliation workers, trace storage, and an evaluation system. Charming is a persistent single-tenant app runtime with key-value storage and callable backend operations, so it is appropriate for an early control surface but not the complete multi-tenant transactional financial core.
+
+Product Thesis
+The problem
+
+Retail finance is not merely a payment problem. A payment is the final mutation in a longer decision chain involving:
+
+Whether the obligation is authentic and unique
+
+Whether goods or services were received
+
+Whether the price agrees with the purchase order or contract
+
+Whether vendor identity and bank details are trusted
+
+Whether sufficient cash will remain after payment
+
+Whether another obligation has higher priority
+
+Whether the payment falls within delegated authority
+
+Whether execution succeeded, failed, reversed, or settled
+
+Whether the resulting bank transaction matches the accounting obligation
+
+A normal SaaS product exposes these records and asks the operator to decide. An agentic product accepts a financial objective, performs bounded investigation, proposes a plan, asks for exceptions or approval, executes permitted actions, and continues monitoring the outcome.
+
+Product definition
+
+Tillwise is an AI-run retail finance operations layer that converts business events into governed financial actions.
+
+A user can provide an objective such as:
+
+Maintain at least £5,000 of available cash, settle valid supplier obligations by their due dates, investigate payment anomalies, and never execute a high-risk or out-of-policy payment without approval.
+
+Tillwise continuously turns that objective into observable runs, evidence-backed recommendations, approval requests, payment instructions, and reconciled outcomes.
+
+Target user
+
+The prototype should target one small or medium retail operator with:
+
+One legal entity
+
+One or a few stores
+
+One operating bank account
+
+A manageable number of suppliers
+
+An owner, finance manager, and optional approver
+
+GBP as the initial currency
+
+Supplier invoices, utility bills, refunds, fees, and recurring operating expenses
+
+Jobs to be done
+
+Tell the user which obligations should be paid, when, and why.
+
+Detect missing, duplicate, mismatched, or suspicious evidence.
+
+Protect a configurable minimum cash buffer.
+
+Escalate only decisions that genuinely require human judgment.
+
+Execute authorized payments exactly once.
+
+Track asynchronous provider and bank outcomes.
+
+Reconcile payments to obligations and ledger entries.
+
+Explain every recommendation and action after the fact.
+
+Product Boundaries
+In scope
+
+Ingest invoices and manually created obligations
+
+Normalize vendors, accounts, evidence, and payment terms
+
+Three-way or two-way matching where evidence exists
+
+Cash-position and short-horizon liquidity context
+
+Duplicate, bank-change, missing-evidence, amount, and timing risk signals
+
+Agent-created payment proposals
+
+Deterministic policy evaluation
+
+Approval, rejection, request-evidence, and expiry flows
+
+Sandbox payment execution
+
+Provider webhook handling
+
+Reconciliation and exception management
+
+Agent-run trace, audit history, and evaluation
+
+Not in the first prototype
+
+Autonomous access to unrestricted bank accounts
+
+Card-data storage or a custom payment processor
+
+Full ERP or double-entry general ledger replacement
+
+Payroll calculation
+
+Tax filing
+
+Lending or investment decisions
+
+Cross-border foreign-exchange optimization
+
+Unbounded browser or computer-use agents
+
+Multiple independent agents negotiating with one another
+
+First-Principles Model
+Tillwise must separate five different concepts that conventional prototypes often collapse into one:
+
+Concept	Question	Owner
+Observation	What happened?	Connectors and event ingestion
+Interpretation	What does the evidence mean?	Models and analytical services
+Decision	What should happen?	Agent proposal
+Authorization	What is allowed to happen?	Deterministic policy and humans
+Accounting truth	What actually happened financially?	Provider, bank, ledger, reconciliation
+A model output is not financial truth. A payment API acceptance is not settlement. A high confidence score is not authorization. Human approval is not reusable permission for a changed amount or destination. These distinctions must be encoded in the architecture and state machines.
+
+Agentic Operating Model
+Hybrid workflow and agent
+
+Predictable business procedures should remain deterministic workflows; model-directed behavior should be used for ambiguity, evidence interpretation, planning, and exception handling. Anthropic distinguishes predefined workflows from agents that dynamically direct their own process and recommends using the simplest architecture that meets the problem.
+
+Tillwise should therefore use:
+
+Deterministic workflow spine: ingestion, normalization, policy evaluation, approval, execution, retries, webhook handling, reconciliation, and accounting.
+
+Agentic decision layer: goal interpretation, evidence planning, tool selection, anomaly investigation, recommendation generation, and explanation.
+
+Human governance layer: policy ownership, exceptional approval, evidence correction, and emergency suspension.
+
+Agent topology
+
+Start with one orchestrator and bounded specialists, not a free-form society of agents.
+
+Component	Responsibility	Can move money?
+Orchestrator	Own run goal, choose next bounded step, manage completion	No
+Evidence specialist	Match invoice, purchase order, receipt, contract and vendor records	No
+Treasury specialist	Assess cash position, due dates and forecast impact	No
+Risk specialist	Detect duplicates, unusual amounts, bank-detail changes and suspicious patterns	No
+Decision synthesizer	Produce structured recommendation and alternatives	No
+Independent critic	Search for unsupported assumptions, missing evidence and unsafe recommendations	No
+Policy engine	Evaluate executable rules against a frozen proposal	No
+Approval service	Bind a human decision to exact action parameters	No
+Payment executor	Submit an authorized instruction through an adapter	Yes
+Reconciler	Match asynchronous financial outcomes and close exceptions	Ledger-controlled
+Specialists should initially be tools or constrained subflows behind one orchestrator. True handoffs should be introduced only when another specialist must assume ownership of a run. Guardrails must be enforced at the action/tool boundary because handoff guardrails do not automatically secure every subsequent tool call.
+
+Agentic Pipeline
+End-to-end flow
+
+text
+Operational or financial event
+        |
+        v
+1. Ingest and authenticate event
+        |
+        v
+2. Normalize into canonical financial entities
+        |
+        v
+3. Create or update an AgentRun
+        |
+        v
+4. Assemble tenant, goal, policy and evidence context
+        |
+        v
+5. Planner creates a typed investigation plan
+        |
+        v
+6. Orchestrator calls read-only specialist tools
+        |
+        v
+7. Decision synthesizer creates a frozen Proposal
+        |
+        v
+8. Independent critic challenges the Proposal
+        |
+        v
+9. Deterministic policy evaluates exact parameters
+        |
+        +------------+-----------------+
+        |            |                 |
+     permitted   approval_required    blocked
+        |            |                 |
+        |       durable interruption    +--> exception queue
+        |            |
+        |       human decision
+        |            |
+        +------------+
+        |
+        v
+10. Pre-execution revalidation
+        |
+        v
+11. Idempotent payment execution
+        |
+        v
+12. Provider/bank web, don't do anything yet and 
+AI Retail Store Agent: Product North Star and Three-Hour Hackathon Execution Playbook
+Document correction
+The product must remain an AI agent that operates a retail store. It must not be reframed as an accounts-payable product, a generic FinOps dashboard, or an isolated payment processor. Financial analysis and money movement are capabilities used by the retail agent to complete operational goals.
+
+Product north star: An autonomous retail-store agent observes store activity, identifies operational needs, analyses operational and financial context, creates a plan, performs permitted actions, handles the resulting transactions, and reconciles the operational and financial outcome.
+
+The permanent operating loop is:
+
+text
+Observe store state
+→ detect a goal, risk or opportunity
+→ analyse operational and financial context
+→ create a plan
+→ evaluate policy and delegated authority
+→ obtain approval where required
+→ perform the retail action
+→ move or receive money where required
+→ monitor the external result
+→ reconcile store state, transaction state and ledger state
+→ record an auditable outcome
+This wording should govern the PRD, architecture, prototype, interface and pitch. Supplier payment is one tool available to the retail agent, not the product identity.
+
+Exact prototype story
+A three-hour prototype should demonstrate one complete retail-operating loop rather than attempt to implement the whole platform:
+
+text
+1. POS and inventory events show that a fast-selling item is approaching stockout.
+2. The retail agent retrieves inventory, sales velocity, supplier options, lead time and cash position.
+3. The agent decides that replenishment is needed and proposes an order quantity and supplier.
+4. A deterministic policy service checks supplier approval, purchase limit, protected cash and delegated authority.
+5. A low-risk action proceeds automatically; a higher-risk action pauses for approval; an unsafe action is blocked.
+6. The system creates the purchase order through a bounded tool.
+7. A seeded delivery and supplier invoice arrive.
+8. The agent verifies the order, receipt, invoice and beneficiary evidence.
+9. The policy service authorises, escalates or blocks payment.
+10. The transaction adapter initiates a sandbox payment using an idempotency key.
+11. Provider events move the transaction through submitted, processing, settled, failed or returned states.
+12. Reconciliation links the purchase order, goods receipt, invoice, payment and ledger entry.
+13. Inventory, cash and obligation states are updated.
+14. The final outcome and complete trace are returned to the retail agent and displayed to the operator.
+The prototype can seed later events such as delivery and invoice receipt. The sophistication comes from preserving one coherent causal chain from a retail signal to a controlled financial outcome—not from pretending every external retail system was built during the event.
+
+What is genuinely agentic
+The model should perform work that cannot be reduced to a fixed sequence:
+
+Interpret the store goal and current situation.
+
+Select which evidence tools are needed.
+
+Compare supplier, inventory, demand and cash alternatives.
+
+Produce a structured plan and state its assumptions.
+
+Revise the plan when a tool returns missing or conflicting evidence.
+
+Decide whether to replenish, wait, reduce quantity or request intervention.
+
+Explain why the selected action serves the store objective.
+
+Resume the same run after a human decision.
+
+The model must not define its own authority, alter policy, invent supplier payment details, bypass approval, mutate the ledger directly or decide that an unconfirmed payment has settled. Those responsibilities stay in deterministic services.
+
+Why other teams appear faster
+The apparent difference is usually not that other builders implement an entire sophisticated product in three hours. Strong teams compress the idea into a minimum demoable product, prepare reusable foundations, build only the visible proof path, and present it as one coherent story. Hackathon guidance consistently prioritises a functioning prototype, deliberate scope and a clear demo over broad unfinished architecture.
+
+The missing capability is therefore not raw coding speed. It is decision compression: converting a large idea into the smallest sequence of screens, states and integrations that proves the central claim.
+
+Past projects show that the underlying challenge has repeated: substantial effort goes into understanding the complete platform and its data flow, but the build needs a tighter conversion from a large vision into a shippable vertical slice.
+
+Common difference in approach
+
+Less effective approach	Effective hackathon approach
+Start from all possible product features	Start from the one claim that must be proven
+Design the complete production architecture	Design one real path and state its production boundary
+Build pages independently	Build the demo sequence end to end
+Add AI after the application works	Define the model decision and tool boundary first
+Keep researching while building	Freeze assumptions and maintain a post-event backlog
+Aim for a generally usable SaaS	Aim for a judge-visible proof of value
+Polish many screens	Polish the few states seen during the demo
+Explain sophistication verbally	Make autonomy, policy and audit visible on screen
+Integrate everything	Use one real integration and seed the remaining context honestly
+Rehearse after development	Write the demo script before development
+Hackathon rubrics commonly reward problem clarity, a working solution, technical execution and live-demo quality; judges can score what they can see working more readily than invisible architectural ambition.
+
+Thinking framework
+Before coding, answer these eight questions in one sentence each:
+
+Who is acting? An authorised AI retail-store operator acting for one merchant.
+
+What changed? A store signal indicates that an operational decision is needed.
+
+What decision requires intelligence? The agent must choose an action using incomplete operational and financial evidence.
+
+What action proves agency? The agent calls a real operational or financial tool.
+
+What can go wrong? The action may breach authority, cash, supplier, risk or evidence rules.
+
+What protects the user? Deterministic policy, approval, idempotency and reconciliation.
+
+What visible result proves value? Store state and transaction state change coherently.
+
+What will judges see? A trace from signal through reasoning, policy, action and verified outcome.
+
+If any proposed feature does not strengthen one of those answers, it belongs in the backlog.
+
+Minimum demoable product
+The build needs five visible objects:
+
+Object	Purpose
+Store mission	Defines the goal, such as preventing stockout while preserving a cash floor
+Agent run	Shows observation, plan, tool calls, interruption and completion
+Policy decision	Shows autonomous, approval-required or blocked authority
+Retail action	Shows purchase-order creation or another operational mutation
+Transaction outcome	Shows submitted, settled or failed money movement and reconciliation
+The single demo claim is:
+
+Given a real retail signal, the agent independently gathers context, selects a store action, passes through explicit financial authority, performs the action, handles its transaction and proves the outcome.
+
+Build the demo backwards
+Write the final sixty-to-ninety-second interaction before implementing anything:
+
+text
+Screen 1: A product is projected to run out.
+Screen 2: Start or observe the agent run.
+Screen 3: The agent gathers sales, inventory, supplier and cash evidence.
+Screen 4: The agent proposes replenishment and explains the choice.
+Screen 5: Policy permits, escalates or blocks the action.
+Screen 6: The authorised order and transaction execute.
+Screen 7: Provider status and reconciliation confirm the outcome.
+Screen 8: The audit timeline shows exactly what happened and why.
+Then create only the data, APIs, tools and components required to make those screens work. Guidance for short hackathons similarly recommends locking the minimum demoable product early, building the demo path first and maintaining a running version.
+
+Three-hour operating plan
+Before the clock
+
+Prepare a starter repository with authentication stub, environment loading, database client, UI shell and deployment.
+
+Verify sandbox credentials and one minimal API call.
+
+Prepare typed schemas for StoreEvent, AgentRun, Plan, ToolCall, PolicyDecision, Action, Transaction and AuditEvent.
+
+Prepare three seeded store situations: permitted, approval-required and blocked.
+
+Write the pitch and demo script.
+
+Keep all stretch features in a separate backlog.
+
+During the clock
+
+Time	Deliverable	Stop condition
+0:00–0:15	Freeze claim, demo story and responsibilities	Everyone can repeat the same product sentence
+0:15–0:40	Load seeded store state and render the complete static demo path	Every required state is visible
+0:40–1:20	Implement one model loop with typed tool calls	Agent produces a validated structured plan
+1:20–1:50	Add deterministic policy and approval interruption	Permitted, paused and blocked paths work
+1:50–2:20	Add one real sandbox action and idempotency	External transaction ID is stored
+2:20–2:40	Add provider-state update, reconciliation and audit trace	End-to-end happy path completes
+2:40–2:50	Add explicit error and loading states	Demo survives one expected failure
+2:50–3:00	Freeze code and rehearse twice	Demo fits the allowed time
+A rough running build is normally more valuable than a visually polished flow that cannot demonstrate its central claim.
+
+Sophistication without overbuilding
+A prototype appears sophisticated when its concepts are connected, not when it has many features. Use these techniques:
+
+Seed realistic state: sales history, inventory position, supplier terms, current balance and policy.
+
+Use typed model output: the agent returns a plan with evidence IDs, assumptions, confidence and intended tools.
+
+Show real tool calls: judges can see inputs, outputs and duration.
+
+Separate proposal from permission: the model recommends; policy authorises.
+
+Persist run state: approval resumes the same run instead of starting a new workflow.
+
+Use one external integration: call a genuine sandbox API and store its external identifier.
+
+Show asynchronous state: submitted is not the same as settled.
+
+Reconcile: connect operational action, financial action and final store state.
+
+Expose limitations honestly: identify seeded events and sandbox boundaries.
+
+Design the trace as a product feature: the judge should understand the system without reading logs.
+
+Practical skill gap
+The most important skills to practise are:
+
+Problem compression: express the product as one actor, trigger, decision, action and outcome.
+
+Vertical slicing: implement a thin path through UI, model, tool, policy, integration and persistence.
+
+State modelling: define entities and transitions before writing components.
+
+Demo-first design: decide exactly what changes on screen and build backwards.
+
+Timeboxing: stop research and feature expansion at predetermined checkpoints.
+
+Integration reuse: maintain tested starters for common infrastructure.
+
+Narrative engineering: make the build and the pitch tell the same causal story.
+
+Failure containment: have seeded inputs, a reset function and one fallback recording.
+
+These can be trained independently of the current idea. The user has already demonstrated the ability to generate ambitious concepts and reason about broad systems; the improvement area is repeatedly compressing those systems into small, executable proofs.
+
+Reusable preparation kit
+Maintain a personal hackathon kit rather than starting from an empty repository each time:
+
+Application shell with accessible navigation and responsive layout
+
+Database schema and seed script
+
+Model adapter with structured output validation
+
+Tool registry and trace middleware
+
+Policy function template
+
+Approval component
+
+Audit timeline component
+
+Sandbox API wrapper with idempotency
+
+Webhook/event simulator
+
+Error, loading and empty states
+
+Demo reset endpoint
+
+Deployment configuration
+
+README and architecture diagram template
+
+This is not cheating; it moves generic setup outside the competition so the event time can be spent on the novel product logic.
+
+Personal pre-build worksheet
+Complete this on one page before every event:
+
+text
+Product in one sentence:
+
+User/agent:
+
+Trigger:
+
+Intelligent decision:
+
+Tools selected by the agent:
+
+Real action:
+
+Policy boundary:
+
+Visible final outcome:
+
+Three demo states:
+1. Success:
+2. Approval:
+3. Block/failure:
+
+One real integration:
+
+Seeded or mocked boundaries:
+
+Features explicitly excluded:
+
+Demo steps:
+1.
+2.
+3.
+4.
+5.
+
+Definition of done:
+Definition of done
+The prototype is complete when:
+
+One store event triggers an agent run.
+
+The model gathers context through tools and returns schema-valid output.
+
+The run shows an explicit plan and rationale.
+
+Policy evaluates the proposed action independently.
+
+At least one permitted action changes a real sandbox or persisted external state.
+
+At least one action requires approval or is blocked.
+
+The transaction has a lifecycle rather than a single paid boolean.
+
+Reconciliation links the operational and financial records.
+
+The interface exposes a complete audit timeline.
+
+The application can be reset and demonstrated twice without manual database repair.
+
+The entire story can be shown in under three minutes.
+
+The development goal is not to create the whole autonomous retail platform during the event. It is to make the central claim undeniable: the AI agent can operate one meaningful retail loop, use controlled financial authority, move money and account for the result.
+
