@@ -22,18 +22,18 @@ export const ProposalPlanSchema = z.object({
   destinationAccountId: z.string(),
   daysOfCoverRemaining: z.number(),
   daysOfCoverAfterReorder: z.number(),
-  urgency: z.enum(['CRITICAL', 'WARNING', 'ROUTINE']),
+  urgency: z.enum(['CRITICAL', 'WARNING', 'ROUTINE']).default('CRITICAL'),
   rationale: z.string(),
-  policyClauseCited: z.string(),
+  policyClauseCited: z.string().optional().default('Clause 2.1'),
   tradeoffOptions: z.array(
     z.object({
       label: z.string(),
       quantity: z.number().int(),
       costPence: z.number().int(),
       daysCover: z.number(),
-      isRecommended: z.boolean(),
+      isRecommended: z.boolean().optional().default(false),
     })
-  ),
+  ).optional().default([]),
 });
 
 export type ProposalPlan = z.infer<typeof ProposalPlanSchema>;
