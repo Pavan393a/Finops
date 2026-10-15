@@ -388,63 +388,7 @@ export default function FinOpsCanvasPage() {
             </div>
           </div>
 
-          {/* Minimalist Step Progress Indicators (From Origami screenshot) */}
-          <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/60 p-1 rounded-full border border-white/[0.04]">
-            <button
-              id="header-pill-overview"
-              type="button"
-              onClick={() => handleSelectTab('overview')}
-              title="Store Overview"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'overview' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-            <button
-              id="header-pill-stock"
-              type="button"
-              onClick={() => handleSelectTab('stock')}
-              title="Inventory & Stock"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'stock' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-            <button
-              id="header-pill-payments"
-              type="button"
-              onClick={() => handleSelectTab('payments')}
-              title="Money Moved (Stripe)"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'payments' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-            <button
-              id="header-pill-rules"
-              type="button"
-              onClick={() => handleSelectTab('rules')}
-              title="Spending Rules"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'rules' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-            <button
-              id="header-pill-bills"
-              type="button"
-              onClick={() => handleSelectTab('bills')}
-              title="3-Way Match & Bills"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'bills' ? 'bg-pink-500 scale-110 shadow-sm shadow-pink-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-            <button
-              id="header-pill-agent-api"
-              type="button"
-              onClick={() => handleSelectTab('agent-api')}
-              title="External Agent Interop"
-              className={`w-6 h-1.5 rounded-full transition-all cursor-pointer ${
-                activeTab === 'agent-api' ? 'bg-indigo-500 scale-110 shadow-sm shadow-indigo-500/50' : 'bg-slate-700 hover:bg-slate-600'
-              }`}
-            />
-          </div>
+
 
           {/* Actions & User Profile */}
           <div className="flex items-center gap-3">
