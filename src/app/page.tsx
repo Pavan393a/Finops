@@ -92,8 +92,13 @@ export default function FinOpsCanvasPage() {
     }
   }, []);
 
+  // Real-time autonomous operations polling (fetches telemetry & pending actions every 5s)
   useEffect(() => {
     fetchStoreStatus();
+    const interval = setInterval(() => {
+      fetchStoreStatus();
+    }, 5000);
+    return () => clearInterval(interval);
   }, [fetchStoreStatus]);
 
   // 2. Sync Mandate with Cognee Knowledge Graph
@@ -327,6 +332,10 @@ export default function FinOpsCanvasPage() {
           <div className="flex items-center gap-3">
             <span className="text-xs text-slate-400">Store:</span>
             <span className="text-sm font-bold text-white tracking-tight">{storeName}</span>
+            <div className="hidden md:flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Auto-Pilot Monitoring Live (5s)</span>
+            </div>
           </div>
 
           {/* Minimalist Step Progress Indicators (From Origami screenshot) */}
