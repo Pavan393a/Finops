@@ -20,6 +20,7 @@ import { DecisionCard, DecisionCardData } from '@/components/DecisionCard';
 import { CogneeInspectorModal } from '@/components/CogneeInspectorModal';
 import { ThreeWayMatchLab } from '@/components/ThreeWayMatchLab';
 import { TransactionStream } from '@/components/TransactionStream';
+import { SkuDetailDrawer } from '@/components/SkuDetailDrawer';
 
 export default function FinOpsCanvasPage() {
   const [storeData, setStoreData] = useState<any>(null);
@@ -29,6 +30,7 @@ export default function FinOpsCanvasPage() {
   const [isInvestigatingSkuId, setIsInvestigatingSkuId] = useState<string | null>(null);
   const [isProcessingDirective, setIsProcessingDirective] = useState(false);
   const [isProcessingCardId, setIsProcessingCardId] = useState<string | null>(null);
+  const [selectedDrawerSku, setSelectedDrawerSku] = useState<SkuItem | null>(null);
 
   // Inspector Modal State
   const [inspectorOpen, setInspectorOpen] = useState(false);
@@ -97,14 +99,14 @@ export default function FinOpsCanvasPage() {
     }
   };
 
-  // 3. Trigger Investigation via Directive or Sku Card
-  const handleRunInvestigation = async (skuId: string, directive?: string) => {
+  // 3. Trigger Investigation via Directive, Sku Card, or Surge Drawer
+  const handleRunInvestigation = async (skuId: string, directive?: string, customQuantity?: number) => {
     setIsInvestigatingSkuId(skuId);
     try {
       const res = await fetch('/api/agent/investigate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ skuId, directive }),
+        body: JSON.stringify({ skuId, directive, customQuantity }),
       });
 
       const data = await res.json();
@@ -370,6 +372,7 @@ export default function FinOpsCanvasPage() {
                       onReject={handleReject}
                       onInspectCognee={handleInspectCognee}
                       isProcessing={isProcessingCardId === card.agentRunId}
+                      currentCashGbp={currentCash}
                     />
                   ))}
                 </div>
@@ -380,6 +383,7 @@ export default function FinOpsCanvasPage() {
             <InventorySheet
               skus={storeData?.skus || []}
               onInvestigate={(skuId) => handleRunInvestigation(skuId)}
+              onSelectSku={(sku) => setSelectedDrawerSku(sku)}
               isInvestigatingId={isInvestigatingSkuId}
             />
 
@@ -394,6 +398,15 @@ export default function FinOpsCanvasPage() {
           <ThreeWayMatchLab purchaseOrders={storeData?.purchaseOrders || []} />
         )}
       </main>
+
+      {/* Sku Detail & Demand Surge Simulator Drawer */}
+      <SkuDetailDrawer
+        sku={selectedDrawerSku}
+        onClose={() => setSelectedDrawerSku(null)}
+        onInvestigate={(skuId, qty, dir) => handleRunInvestigation(skuId, dir, qty)}
+        isInvestigating={isInvestigatingSkuId !== null}
+        currentCashGbp={currentCash}
+      />
 
       {/* Cognee "Why Did You Pay This?" Multi-Hop Audit Inspector Modal */}
       <CogneeInspectorModal
